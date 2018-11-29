@@ -84,7 +84,7 @@ $optParams = array(
   'maxResults' => 10,
   'orderBy' => 'startTime',
   'singleEvents' => true,
-  //'timeMin' => date('c'),
+  'timeMin' => '2018-11-29T22:00:00Z',
 );
 //print_r($optParams);
 
@@ -116,11 +116,17 @@ wait_input();
 
 echo "Payment Confirmed.\n";
 $service->events->delete($PAYPAL_CALENDAR_ID, $lock_event->id);
-$service->events->insert($ADMIN_CALENDAR_ID, new Google_Service_Calendar_Event(array(
+$booking_event = $service->events->insert($ADMIN_CALENDAR_ID, new Google_Service_Calendar_Event(array(
     'summary' => 'Badminton Court 1',
     'description' => 'Name: John Doe\nEmail: johndoe@gmail.com\nPhone Number: 07123412342',
     'start' => array('dateTime' => '2018-11-30T18:00:00+01:00', 'timeZone' => $TIMEZONE),
     'end'   => array('dateTime' => '2018-11-30T20:00:00+01:00', 'timeZone' => $TIMEZONE),
 )));
 echo "Booking Created.\n";
+
+wait_input();
+
+// Clean up
+$service->events->delete($ADMIN_CALENDAR_ID, $booking_event->id);
+echo "Demo Complete.\n";
 ?>
