@@ -7,6 +7,8 @@ function wait_input()
     return $line;
 }
 
+$TIMEZONE = 'Europe/London';
+
 require __DIR__ . '/vendor/autoload.php';
 
 if (php_sapi_name() != 'cli') {
@@ -21,7 +23,10 @@ function getClient()
 {
     $client = new Google_Client();
     $client->setApplicationName('Google Calendar API PHP Quickstart');
-    $client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
+    $client->setScopes([
+        'https://www.googleapis.com/auth/calendar',
+        'https://www.googleapis.com/auth/calendar.events',
+    ]);
     $client->setAuthConfig('credentials.json');
     $client->setAccessType('offline');
     $client->setPrompt('select_account consent');
@@ -77,8 +82,10 @@ $optParams = array(
   'maxResults' => 10,
   'orderBy' => 'startTime',
   'singleEvents' => true,
-  'timeMin' => date('c'),
+  //'timeMin' => date('c'),
 );
+//print_r($optParams);
+
 $results = $service->events->listEvents($calendarId, $optParams);
 $events = $results->getItems();
 
@@ -88,10 +95,17 @@ if (empty($events)) {
     print "Upcoming events:\n";
     foreach ($events as $event) {
         $start = $event->start->dateTime;
-        if (empty($start)) {
-            $start = $event->start->date;
-        }
-        printf("%s (%s)\n", $event->getSummary(), $start);
+        $end = $event->end->dateTime;
+        printf("%s (%s - %s)\n", $event->getSummary(), $start, $end);
     }
 }
+
+wait_input();
+
+$service->events->insert($calendarId, new Google_Service_Calendar_Event(array(
+    'summary' => 'Badminton Court 1',
+    'description' => 'Name: John Doe\nEmail: johndoe@gmail.com\nPhone Number: 07123412342',
+    'start' => array('dateTime' => '2018-11-30T18:00:00+01:00', 'timeZone' => $TIMEZONE),
+    'end'   => array('dateTime' => '2018-11-30T20:00:00+01:00', 'timeZone' => $TIMEZONE),
+)));
 ?>
