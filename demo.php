@@ -76,8 +76,10 @@ function getClient()
 $client = getClient();
 $service = new Google_Service_Calendar($client);
 
+$PAYPAL_CALENDAR_ID = '1mlpohc4b7q3ujqvpndg27vna4@group.calendar.google.com';
+$ADMIN_CALENDAR_ID  = 'durhamredthunder2018@gmail.com';
+
 // Print the next 10 events on the user's calendar.
-$calendarId = 'primary';
 $optParams = array(
   'maxResults' => 10,
   'orderBy' => 'startTime',
@@ -86,7 +88,7 @@ $optParams = array(
 );
 //print_r($optParams);
 
-$results = $service->events->listEvents($calendarId, $optParams);
+$results = $service->events->listEvents($ADMIN_CALENDAR_ID, $optParams);
 $events = $results->getItems();
 
 if (empty($events)) {
@@ -102,10 +104,23 @@ if (empty($events)) {
 
 wait_input();
 
-$service->events->insert($calendarId, new Google_Service_Calendar_Event(array(
+echo "Waiting for Payment.\n";
+$lock_event = $service->events->insert($PAYPAL_CALENDAR_ID, new Google_Service_Calendar_Event(array(
+    'summary' => 'PAYPAL-PAYMENT-ID',
+    'description' => 'Badminton Court 1',
+    'start' => array('dateTime' => '2018-11-30T18:00:00+01:00', 'timeZone' => $TIMEZONE),
+    'end'   => array('dateTime' => '2018-11-30T20:00:00+01:00', 'timeZone' => $TIMEZONE),
+)));
+
+wait_input();
+
+echo "Payment Confirmed.\n";
+$service->events->delete($PAYPAL_CALENDAR_ID, $lock_event->id);
+$service->events->insert($ADMIN_CALENDAR_ID, new Google_Service_Calendar_Event(array(
     'summary' => 'Badminton Court 1',
     'description' => 'Name: John Doe\nEmail: johndoe@gmail.com\nPhone Number: 07123412342',
     'start' => array('dateTime' => '2018-11-30T18:00:00+01:00', 'timeZone' => $TIMEZONE),
     'end'   => array('dateTime' => '2018-11-30T20:00:00+01:00', 'timeZone' => $TIMEZONE),
 )));
+echo "Booking Created.\n";
 ?>
