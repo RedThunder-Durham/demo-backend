@@ -104,6 +104,7 @@ if (empty($events)) {
 
 wait_input();
 
+echo "Booking request made.\n";
 echo "Waiting for Payment.\n";
 $lock_event = $service->events->insert($PAYPAL_CALENDAR_ID, new Google_Service_Calendar_Event(array(
     'summary' => 'PAYPAL-PAYMENT-ID',
@@ -115,14 +116,20 @@ $lock_event = $service->events->insert($PAYPAL_CALENDAR_ID, new Google_Service_C
 wait_input();
 
 echo "Payment Confirmed.\n";
-$service->events->delete($PAYPAL_CALENDAR_ID, $lock_event->id);
 $booking_event = $service->events->insert($ADMIN_CALENDAR_ID, new Google_Service_Calendar_Event(array(
     'summary' => 'Badminton Court 1',
-    'description' => 'Name: John Doe\nEmail: johndoe@gmail.com\nPhone Number: 07123412342',
+    'description' => 'Name: John Doe
+Email: johndoe@gmail.com
+Phone Number: 07123412342
+Payment-ID: PAYPAL-PAYMENT-ID',
     'start' => array('dateTime' => '2018-11-30T18:00:00+01:00', 'timeZone' => $TIMEZONE),
     'end'   => array('dateTime' => '2018-11-30T20:00:00+01:00', 'timeZone' => $TIMEZONE),
 )));
 echo "Booking Created.\n";
+
+wait_input();
+$service->events->delete($PAYPAL_CALENDAR_ID, $lock_event->id);
+echo "Deleted Payment Lock.\n";
 
 wait_input();
 
